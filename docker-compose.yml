@@ -1,0 +1,10 @@
+version: "3.7"
+services:
+  web:
+    container_name: pmbonline_container
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3106:3106"
+    restart: unless-stopped
