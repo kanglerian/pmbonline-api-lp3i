@@ -57,6 +57,11 @@ router.post('/login', async (req, res) => {
       }
     });
 
+    res.cookie('refreshTokenPMBOnline', refreshTokenPMBOnline, {
+      httpOnly: true,
+      secure: false,
+    });
+
     return res.status(200).json({
         token: token,
         refresh_token: refreshTokenPMBOnline,
