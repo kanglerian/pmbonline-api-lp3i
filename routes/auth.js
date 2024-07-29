@@ -3,12 +3,34 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
 
 const verifyToken = require('../middlewares/verifytoken');
 
 const { JWT_SECRET, JWT_SECRET_REFRESH_TOKEN, JWT_ACCESS_TOKEN_EXPIRED, JWT_REFRESH_TOKEN_EXPIRED } = process.env;
 
-const { User } = require('../models');
+const { User, Applicant, ApplicantFamily } = require('../models');
+const { body, validationResult } = require('express-validator');
+
+function getYearPMB() {
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth();
+  const startYear = currentMonth >= 9 ? currentYear + 1 : currentYear;
+  return startYear;
+}
+
+function capitalizeFirstLetter(str) {
+  if (str.length === 0) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+function capitalizeName(name) {
+  return name
+    .split(' ')
+    .map(part => capitalizeFirstLetter(part))
+    .join(' ');
+}
 
 router.get('/', (req, res) => {
   try {
@@ -63,20 +85,203 @@ router.post('/login', async (req, res) => {
     });
 
     return res.status(200).json({
-        token: token,
-        refresh_token: refreshTokenPMBOnline,
-        message: 'Login successful!'
+      token: token,
+      refresh_token: refreshTokenPMBOnline,
+      message: 'Login successful!'
     });
   } catch (error) {
-    console.log(error.message);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
-router.post('/register', async (req, res) => {
+/* Use for PPO */
+router.post('/register/v1', [
+  body('name')
+    .isLength({ max: 150 }).withMessage('name cannot be more than 150 characters long')
+    .notEmpty().withMessage('name is required')
+  ,
+  body('email')
+    .isEmail().withMessage('Must be a valid email address')
+    .isLength({ max: 100 }).withMessage('email cannot be more than 100 characters long')
+    .notEmpty().withMessage('email is required')
+    .custom(async (value) => {
+      const user = await User.findOne({
+        where: {
+          email: value
+        }
+      });
+      if (user) {
+        return Promise.reject('Email already in use');
+      }
+    }),
+  body('phone')
+    .notEmpty().withMessage('phone is required')
+    .isLength({ min: 12 }).withMessage('phone cannot be at least 12 characters long')
+    .isLength({ max: 15 }).withMessage('phone cannot be more than 15 characters long')
+    .isMobilePhone('id-ID').withMessage('Phone number must be a valid Indonesian phone number')
+    .custom(async (value) => {
+      const user = await User.findOne({
+        where: {
+          phone: value
+        }
+      });
+      if (user) {
+        return Promise.reject('Phone already in use');
+      }
+    }),
+  body('information')
+    .notEmpty().withMessage('information is required'),
+], async (req, res) => {
   try {
-    await User.create(req.body);
-    return res.status(200).json({ message: 'Registration successful.' });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { name, email, phone, information } = req.body;
+
+    const applicant = await Applicant.findOne({
+      where: {
+        phone: phone
+      }
+    });
+
+    if (applicant) {
+      const dataApplicant = {
+        email: email,
+        sourceDaftarId: 12,
+        statusId: 1,
+        followupId: 1,
+      }
+
+      const hashPassword = await bcrypt.hash(phone, 10);
+
+      const dataUser = {
+        identity: applicant.identity,
+        name: applicant.name,
+        email: email,
+        phone: applicant.phone,
+        password: hashPassword,
+        role: 'S',
+        status: true
+      }
+
+      const userCreated = await User.create(dataUser);
+      await Applicant.update(dataApplicant, {
+        where: {
+          id: applicant.id
+        }
+      });
+
+      const payload = {
+        id: userCreated.id,
+        name: userCreated.name,
+        email: userCreated.email,
+        phone: userCreated.phone,
+        role: userCreated.role,
+        status: userCreated.status
+      }
+
+      const token = jwt.sign({ data: payload }, JWT_SECRET, { expiresIn: JWT_ACCESS_TOKEN_EXPIRED });
+      const refreshTokenPMBOnline = jwt.sign({ data: payload }, JWT_SECRET_REFRESH_TOKEN, { expiresIn: JWT_REFRESH_TOKEN_EXPIRED });
+
+      await User.update({
+        token: refreshTokenPMBOnline,
+      }, {
+        where: {
+          id: userCreated.id
+        }
+      });
+
+      res.cookie('refreshTokenPMBOnline', refreshTokenPMBOnline, {
+        httpOnly: true,
+        secure: false,
+      });
+
+      return res.status(200).json({
+        token: token,
+        refresh_token: refreshTokenPMBOnline,
+        message: 'Registration successful!'
+      });
+    } else {
+      const presenter = await User.findOne({
+        where: {
+          role: 'P',
+          phone: information
+        }
+      });
+
+      const dataApplicant = {
+        identity: uuidv4(),
+        name: capitalizeName(name),
+        email: email,
+        phone: email,
+        pmb: getYearPMB(),
+        identityUser: presenter ? information : '6281313608558',
+        sourceId: 12,
+        sourceDaftarId: 12,
+        statusId: 1,
+        followupId: 1,
+      }
+
+      const hashPassword = await bcrypt.hash(phone, 10);
+
+      const dataUser = {
+        identity: uuidv4(),
+        name: capitalizeName(name),
+        email: email,
+        phone: phone,
+        password: hashPassword,
+        role: 'S',
+        status: true
+      }
+
+      const dataFather = {
+        identityUser: uuidv4(),
+        gender: true
+      }
+
+      const dataMother = {
+        identityUser: uuidv4(),
+        gender: false
+      }
+
+      const userCreated = await User.create(dataUser);
+      await Applicant.create(dataApplicant);
+      await ApplicantFamily.create(dataFather);
+      await ApplicantFamily.create(dataMother);
+
+      const payload = {
+        id: userCreated.id,
+        name: userCreated.name,
+        email: userCreated.email,
+        phone: userCreated.phone,
+        role: userCreated.role,
+        status: userCreated.status
+      }
+
+      const token = jwt.sign({ data: payload }, JWT_SECRET, { expiresIn: JWT_ACCESS_TOKEN_EXPIRED });
+      const refreshTokenPMBOnline = jwt.sign({ data: payload }, JWT_SECRET_REFRESH_TOKEN, { expiresIn: JWT_REFRESH_TOKEN_EXPIRED });
+
+      await User.update({
+        token: refreshTokenPMBOnline,
+      }, {
+        where: {
+          id: userCreated.id
+        }
+      });
+
+      res.cookie('refreshTokenPMBOnline', refreshTokenPMBOnline, {
+        httpOnly: true,
+        secure: false,
+      });
+
+      return res.status(200).json({
+        token: token,
+        refresh_token: refreshTokenPMBOnline,
+        message: 'Registration successful!'
+      });
+    }
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }
@@ -101,6 +306,29 @@ router.post('/token', async (req, res) => {
       const token = jwt.sign({ data: decoded.data }, JWT_SECRET, { expiresIn: JWT_ACCESS_TOKEN_EXPIRED });
       return res.status(200).json(token);
     })
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+})
+
+router.post('/validation', async(req, res) => {
+  try {
+    const { field, value } = req.body;
+    const applicant = await Applicant.findOne({
+      where: {
+        [field]: value
+      }
+    });
+    if(applicant){
+      res.json({
+        message: 'ada',
+        data: applicant
+      });
+    } else {
+      res.json({
+        message: 'tidak ada'
+      });
+    }
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }

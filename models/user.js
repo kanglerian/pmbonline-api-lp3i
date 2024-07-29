@@ -50,10 +50,11 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
       allowNull: true,
     },
-    email_verified_at: {
+    emailVerifiedAt: {
       type: DataTypes.DATE,
       unique: false,
       allowNull: true,
+      field: 'email_verified_at'
     },
     phone: {
       type: DataTypes.STRING(20),
@@ -82,10 +83,11 @@ module.exports = (sequelize, DataTypes) => {
       unique: false,
       allowNull: false,
     },
-    remember_token: {
+    rememberToken: {
       type: DataTypes.STRING(100),
       unique: false,
       allowNull: true,
+      field: 'remember_token'
     },
     createdAt: {
       type: DataTypes.DATE,
