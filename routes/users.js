@@ -5,7 +5,6 @@ const verifytoken = require('../middlewares/verifytoken');
 
 /* GET users listing. */
 router.get('/', verifytoken, async (req, res) => {
-  console.log(req.headers.authorization);
   try {
     const users = await User.findAll();
     return res.json(users);
