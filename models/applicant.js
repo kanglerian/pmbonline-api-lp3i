@@ -128,7 +128,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       unique: false,
       allowNull: true,
-      field: 'social_media'
+      field: 'scholarship_date'
     },
     note: {
       type: DataTypes.TEXT,
@@ -141,7 +141,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
     identityUser: {
-      type: DataTypes.STRING(30),
+      type: DataTypes.STRING(50),
       unique: false,
       allowNull: false,
       field: 'identity_user'

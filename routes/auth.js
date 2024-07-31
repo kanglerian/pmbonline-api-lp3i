@@ -204,6 +204,7 @@ router.post('/register/v1', [
         message: 'Registration successful!'
       });
     } else {
+      const identityUser = uuidv4();
       const presenter = await User.findOne({
         where: {
           role: 'P',
@@ -212,10 +213,10 @@ router.post('/register/v1', [
       });
 
       const dataApplicant = {
-        identity: uuidv4(),
+        identity: identityUser,
         name: capitalizeName(name),
         email: email,
-        phone: email,
+        phone: phone,
         pmb: getYearPMB(),
         identityUser: presenter ? information : '6281313608558',
         sourceId: 12,
@@ -227,7 +228,7 @@ router.post('/register/v1', [
       const hashPassword = await bcrypt.hash(phone, 10);
 
       const dataUser = {
-        identity: uuidv4(),
+        identity: identityUser,
         name: capitalizeName(name),
         email: email,
         phone: phone,
@@ -237,12 +238,12 @@ router.post('/register/v1', [
       }
 
       const dataFather = {
-        identityUser: uuidv4(),
+        identityUser: identityUser,
         gender: true
       }
 
       const dataMother = {
-        identityUser: uuidv4(),
+        identityUser: identityUser,
         gender: false
       }
 
@@ -283,6 +284,7 @@ router.post('/register/v1', [
       });
     }
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -309,9 +311,9 @@ router.post('/token', async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }
-})
+});
 
-router.post('/validation', async(req, res) => {
+router.post('/validation', async (req, res) => {
   try {
     const { field, value } = req.body;
     const applicant = await Applicant.findOne({
@@ -319,20 +321,61 @@ router.post('/validation', async(req, res) => {
         [field]: value
       }
     });
-    if(applicant){
-      res.json({
-        message: 'ada',
-        data: applicant
+    if (applicant) {
+      const user = await User.findOne({
+        where: {
+          [field]: value
+        }
       });
+      if (user) {
+        return res.status(200).json({
+          message: 'Account found in users and applicant.',
+          data: {
+            name: applicant.name,
+            email: applicant.email,
+            phone: applicant.phone,
+          },
+          create: false,
+        });
+      } else {
+        return res.status(404).json({
+          message: 'Account found in applicant only.',
+          data: {
+            name: applicant.name,
+            email: applicant.email,
+            phone: applicant.phone,
+          },
+          create: true,
+        });
+      }
     } else {
-      res.json({
-        message: 'tidak ada'
+      const user = await User.findOne({
+        where: {
+          [field]: value
+        }
       });
+      if (user) {
+        return res.status(200).json({
+          message: 'Account found in users and applicant. Found in user.',
+          data: {
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+          },
+          create: false,
+        });
+      } else {
+        return res.status(404).json({
+          message: 'Account not found in users and applicant.',
+          data: null,
+          create: true,
+        });
+      }
     }
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }
-})
+});
 
 router.delete('/logout', verifyToken, async (req, res) => {
   try {
@@ -348,6 +391,6 @@ router.delete('/logout', verifyToken, async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }
-})
+});
 
 module.exports = router;

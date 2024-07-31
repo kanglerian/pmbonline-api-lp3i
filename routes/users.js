@@ -6,8 +6,10 @@ const verifytoken = require('../middlewares/verifytoken');
 /* GET users listing. */
 router.get('/', verifytoken, async (req, res) => {
   try {
-    const users = await User.findAll();
-    return res.json(users);
+    const response = await User.findAll({
+      attributes: ['name','email','phone','role','status']
+    });
+    return res.status(200).json(response);
   } catch (error) {
     return res.json({
       message: error.message

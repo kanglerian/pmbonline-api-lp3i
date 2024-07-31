@@ -3,7 +3,7 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class ApplicantFamily extends Model {
+  class School extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -13,51 +13,34 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  ApplicantFamily.init({
-    identityUser: {
-      type: DataTypes.STRING(50),
-      unique: false,
-      allowNull: false,
-      field: 'identity_user'
-    },
+  School.init({
     name: {
-      type: DataTypes.STRING(150),
+      type: DataTypes.STRING(255),
       unique: false,
-      allowNull: true,
-    },
-    job: {
-      type: DataTypes.STRING(150),
-      unique: false,
-      allowNull: true,
-    },
-    phone: {
-      type: DataTypes.STRING(20),
-      unique: false,
-      allowNull: true,
-    },
-    gender: {
-      type: DataTypes.BOOLEAN,
       allowNull: false,
     },
-    placeOfBirth: {
-      type: DataTypes.TEXT,
-      unique: false,
-      allowNull: true,
-      field: 'place_of_birth'
-    },
-    dateOfBirth: {
-      type: DataTypes.DATEONLY,
-      unique: false,
-      allowNull: true,
-      field: 'date_of_birth'
-    },
-    education: {
-      type: DataTypes.STRING,
+    status: {
+      type: DataTypes.STRING(255),
       unique: false,
       allowNull: true,
     },
-    address: {
-      type: DataTypes.TEXT,
+    region: {
+      type: DataTypes.STRING(255),
+      unique: false,
+      allowNull: true,
+    },
+    type: {
+      type: DataTypes.STRING(255),
+      unique: false,
+      allowNull: true,
+    },
+    lat: {
+      type: DataTypes.STRING(255),
+      unique: false,
+      allowNull: true,
+    },
+    lng: {
+      type: DataTypes.STRING(255),
       unique: false,
       allowNull: true,
     },
@@ -75,9 +58,9 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     sequelize,
-    modelName: 'ApplicantFamily',
-    tableName: 'applicants_family',
+    modelName: 'School',
+    tableName: 'schools',
     freezeTableName: true,
   });
-  return ApplicantFamily;
+  return School;
 };
