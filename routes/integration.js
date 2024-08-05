@@ -13,7 +13,11 @@ router.get('/v1', async (req, res) => {
         exclude: ['id', 'note', 'relation', 'isread', 'come', 'isApplicant', 'isDaftar', 'isRegister','known','planning','otherCampus','sourceDaftarId','followupId','sourceId','statusId', 'createdAt', 'updatedAt']
       },
       include: [
-        { model: School, as: 'schools' }
+        {
+          model: School,
+          as: 'schools',
+          attributes: ['name']
+        }
       ]
     });
     return res.status(200).json(response);
