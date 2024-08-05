@@ -9,6 +9,8 @@ const authRouter = require('./routes/auth');
 const usersRouter = require('./routes/users');
 const applicantsRouter = require('./routes/applicants');
 const schoolsRouter = require('./routes/schools');
+const profilesRouter = require('./routes/profiles');
+const integrationRouter = require('./routes/integration');
 
 const app = express();
 
@@ -36,5 +38,7 @@ app.use('/auth', authRouter);
 app.use('/users', usersRouter);
 app.use('/applicants', applicantsRouter);
 app.use('/schools', schoolsRouter);
+app.use('/profiles', profilesRouter);
+app.use('/integration', integrationRouter);
 
 module.exports = app;

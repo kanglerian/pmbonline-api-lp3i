@@ -3,49 +3,34 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class School extends Model {
+  class FileUpload extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      School.hasMany(models.Applicant, {
-        foreignKey: 'school',
-        as: 'applicant'
+      FileUpload.hasMany(models.UserUpload, {
+        foreignKey: 'fileuploadId',
+        as: 'users'
       });
     }
   }
-  School.init({
+  FileUpload.init({
     name: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(150),
       unique: false,
       allowNull: false,
     },
-    status: {
-      type: DataTypes.STRING(255),
+    namefile: {
+      type: DataTypes.STRING(150),
       unique: false,
-      allowNull: true,
+      allowNull: false,
     },
-    region: {
-      type: DataTypes.STRING(255),
+    accept: {
+      type: DataTypes.STRING(150),
       unique: false,
-      allowNull: true,
-    },
-    type: {
-      type: DataTypes.STRING(255),
-      unique: false,
-      allowNull: true,
-    },
-    lat: {
-      type: DataTypes.STRING(255),
-      unique: false,
-      allowNull: true,
-    },
-    lng: {
-      type: DataTypes.STRING(255),
-      unique: false,
-      allowNull: true,
+      allowNull: false,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -61,9 +46,9 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     sequelize,
-    modelName: 'School',
-    tableName: 'schools',
+    modelName: 'FileUpload',
+    tableName: 'file_upload',
     freezeTableName: true,
   });
-  return School;
+  return FileUpload;
 };
