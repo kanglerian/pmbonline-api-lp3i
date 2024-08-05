@@ -74,6 +74,12 @@ router.get('/', verifytoken, async (req, res) => {
       ]
     });
 
+    const user = await User.findOne({
+      where: {
+        identity: identityUser
+      },
+    });
+
     const father = await ApplicantFamily.findOne({
       where: {
         identity_user: identityUser,
@@ -133,11 +139,61 @@ router.get('/', verifytoken, async (req, res) => {
     const isValidProgram = validateApplicantProgram(applicant);
     const isValidFather = validateApplicantFather(father);
     const isValidMother = validateApplicantMother(mother);
-    const isValidFiles = foto && aktaKelahiran && sertifikatPendukung;
+    const isValidFiles = foto && aktaKelahiran && sertifikatPendukung && fotoRumah && buktiTarifDaya;
+    const isValid = isValidData && isValidProgram && isValidFather && isValidMother && isValidFiles;
 
-    console.log(isValidMother);
-
-    return res.status(200).json(buktiTarifDaya);
+    return res.status(200).json({
+      applicant: {
+        identity: applicant.identity,
+        name: applicant.name,
+        avatar: user.avatar,
+        gender: applicant.gender,
+        religion: applicant.religion,
+        place_of_birth: applicant.placeOfBirth,
+        date_of_birth: applicant.dateOfBirth,
+        address: applicant.address,
+        school_id: applicant.school,
+        major: applicant.major,
+        class: applicant.class,
+        year: applicant.year,
+        program: applicant.program,
+        program_second: applicant.programSecond,
+        income_parent: applicant.incomeParent,
+        social_media: applicant.socialMedia,
+        role: user.role,
+        status: user.status,
+        school: applicant.school ? applicant.schools.name : null,
+      },
+      father: {
+        name: father.name,
+        phone: father.phone,
+        place_of_birth: father.placeOfBirth,
+        date_of_birth: father.dateOfBirth,
+        job: father.job,
+        education: father.education,
+        address: father.address
+      },
+      mother: {
+        name: mother.name,
+        phone: mother.phone,
+        place_of_birth: mother.placeOfBirth,
+        date_of_birth: mother.dateOfBirth,
+        job: mother.job,
+        education: mother.education,
+        address: mother.address
+      },
+      userupload: userUpload,
+      fileupload: fileupload,
+      fileuploaded: fileuploaded,
+      validate: {
+        validate: isValid,
+        validate_data: isValidData,
+        validate_program: isValidProgram,
+        validate_father: isValidFather,
+        validate_mother: isValidMother,
+        validate_files: isValidFiles
+      }
+    });
   } catch (error) {
     return res.json({
       message: error.message

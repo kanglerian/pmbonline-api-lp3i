@@ -60,7 +60,7 @@ router.patch('/update/v1/:identity', verifytoken, [
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(422).json({ errors: errors.array() });
     }
 
     const user = await User.findOne({
@@ -87,11 +87,14 @@ router.patch('/update/v1/:identity', verifytoken, [
       });
     }
 
-    const capitalizeWords = str => str
-      .toLowerCase()
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+    const capitalizeWords = (str) => {
+      if (str === undefined) {
+        return 'undefined';
+      } else {
+        str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        return (str);
+      }
+    }
 
     const place = req.body.place !== null ? capitalizeWords(req.body.place) + ', ' : null;
     const rt = req.body.rt !== null ? 'RT. ' + req.body.rt + ' ' : null;
@@ -132,9 +135,7 @@ router.patch('/update/v1/:identity', verifytoken, [
       }
     }
 
-    var address;
-
-    if (addressRequest) {
+    if (req.body.place && req.body.rt && req.body.rw && req.body.postal_code) {
       if (req.body.address == addressRequest) {
         address = req.body.address;
       } else {
@@ -177,7 +178,7 @@ router.patch('/update/v1/:identity', verifytoken, [
     });
 
     return res.status(200).json({
-      message: 'Personal data updated successfully!'
+      message: 'Personal data updated successfully!',
     });
   } catch (error) {
     return res.json({
