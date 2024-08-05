@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Applicant } = require('../models');
+const { Applicant, School } = require('../models');
 
 /* Integrate SIAKAD TO: register, prodi TO */
 router.get('/v1', async (req, res) => {
@@ -10,8 +10,11 @@ router.get('/v1', async (req, res) => {
         program: 'Vokasi 2 Tahun Teknik Otomotif'
       },
       attributes: {
-        exclude: ['createdAt', 'updatedAt']
-      }
+        exclude: ['id', 'note', 'relation', 'isread', 'come', 'isApplicant', 'isDaftar', 'isRegister','known','planning','otherCampus','sourceDaftarId','followupId','sourceId','statusId', 'createdAt', 'updatedAt']
+      },
+      include: [
+        { model: School, as: 'schools' }
+      ]
     });
     return res.status(200).json(response);
   } catch (error) {
