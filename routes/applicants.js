@@ -198,7 +198,7 @@ router.patch('/updateprodi/v1/:identity', verifytoken, [
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(422).json({ errors: errors.array() });
     }
 
     const applicant = await Applicant.findOne({
@@ -298,7 +298,7 @@ router.patch('/updatefamily/v1/:identity', verifytoken, [
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(422).json({ errors: errors.array() });
     }
 
     const father = await ApplicantFamily.findOne({
