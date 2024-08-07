@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { User } = require('../models');
-const verifytoken = require('../middlewares/verifytoken');
 
 /* GET presenters listing. */
-router.get('/', verifytoken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const response = await User.findAll({
       where: {
         role: 'P',
+        status: true,
       },
       attributes: ['identity','name','email','phone']
     });
