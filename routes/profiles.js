@@ -122,8 +122,8 @@ router.get('/', verifytoken, async (req, res) => {
             "akta-kelahiran",
             "kartu-keluarga",
             "sertifikat-pendukung",
-            "foto-rumah",
-            "bukti-tarif-daya",
+            "foto-rumah-luar-dan-dalam",
+            "bukti-tarif-daya-listrik",
           ]
         }
       }
@@ -132,8 +132,8 @@ router.get('/', verifytoken, async (req, res) => {
     const foto = await getFileUploadByType(identityUser, 'foto');
     const aktaKelahiran = await getFileUploadByType(identityUser, 'akta-kelahiran');
     const sertifikatPendukung = await getFileUploadByType(identityUser, 'sertifikat-pendukung');
-    const fotoRumah = await getFileUploadByType(identityUser, 'foto-rumah');
-    const buktiTarifDaya = await getFileUploadByType(identityUser, 'bukti-tarif-daya');
+    const fotoRumah = await getFileUploadByType(identityUser, 'foto-rumah-luar-dan-dalam');
+    const buktiTarifDaya = await getFileUploadByType(identityUser, 'bukti-tarif-daya-listrik');
 
     const isValidData = validateApplicantData(applicant);
     const isValidProgram = validateApplicantProgram(applicant);
