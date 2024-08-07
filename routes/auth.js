@@ -254,6 +254,7 @@ router.post('/register/v1', [
 
       const payload = {
         id: userCreated.id,
+        identity: userCreated.identity,
         name: userCreated.name,
         email: userCreated.email,
         phone: userCreated.phone,
