@@ -11,6 +11,7 @@ const applicantsRouter = require('./routes/applicants');
 const schoolsRouter = require('./routes/schools');
 const profilesRouter = require('./routes/profiles');
 const integrationRouter = require('./routes/integration');
+const useruploadRouter = require('./routes/userupload');
 
 const app = express();
 
@@ -40,5 +41,6 @@ app.use('/applicants', applicantsRouter);
 app.use('/schools', schoolsRouter);
 app.use('/profiles', profilesRouter);
 app.use('/integration', integrationRouter);
+app.use('/userupload', useruploadRouter);
 
 module.exports = app;
