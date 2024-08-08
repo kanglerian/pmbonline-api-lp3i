@@ -258,10 +258,8 @@ router.patch('/updatefamily/v1/:identity', verifytoken, [
   body('father_education')
     .notEmpty().withMessage('father education is required'),
   body('father_rt')
-    .isLength({ min: 2 }).withMessage('father RT cannot be at least 2 characters long')
     .isLength({ max: 3 }).withMessage('father RT cannot be more than 3 characters long'),
   body('father_rw')
-    .isLength({ min: 2 }).withMessage('father RW cannot be at least 2 characters long')
     .isLength({ max: 3 }).withMessage('father RW cannot be more than 3 characters long'),
   body('father_rt_postal_code')
     .isLength({ max: 5 }).withMessage('father postal code must be exactly 5 characters long'),
@@ -286,10 +284,8 @@ router.patch('/updatefamily/v1/:identity', verifytoken, [
   body('mother_education')
     .notEmpty().withMessage('mother education is required'),
   body('mother_rt')
-    .isLength({ min: 2 }).withMessage('mother RT cannot be at least 2 characters long')
     .isLength({ max: 3 }).withMessage('mother RT cannot be more than 3 characters long'),
   body('mother_rw')
-    .isLength({ min: 2 }).withMessage('mother RW cannot be at least 2 characters long')
     .isLength({ max: 3 }).withMessage('mother RW cannot be more than 3 characters long'),
   body('mother_rt_postal_code')
     .isLength({ max: 5 }).withMessage('mother postal code must be exactly 5 characters long'),
@@ -327,11 +323,14 @@ router.patch('/updatefamily/v1/:identity', verifytoken, [
       });
     }
 
-    const capitalizeWords = str => str
-      .toLowerCase()
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+    const capitalizeWords = (str) => {
+      if (str === undefined) {
+        return 'undefined';
+      } else {
+        str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        return (str);
+      }
+    }
 
     /* Father */
     const fatherPlace = req.body.father_place !== null ? capitalizeWords(req.body.father_place) + ', ' : null;
@@ -358,8 +357,8 @@ router.patch('/updatefamily/v1/:identity', verifytoken, [
     var fatherAddress;
     var motherAddress;
 
-    if (fatherAddressRequest) {
-      if (req.body.address == fatherAddressRequest) {
+    if (req.body.father_place && req.body.father_rt && req.body.father_rw && req.body.father_postal_code) {
+      if (req.body.father_address == fatherAddressRequest) {
         fatherAddress = req.body.father_address;
       } else {
         fatherAddress = fatherAddressRequest;
@@ -368,8 +367,8 @@ router.patch('/updatefamily/v1/:identity', verifytoken, [
       fatherAddress = father.address;
     }
 
-    if (motherAddressRequest) {
-      if (req.body.address == motherAddressRequest) {
+    if (req.body.mother_place && req.body.mother_rt && req.body.mother_rw && req.body.mother_postal_code) {
+      if (req.body.mother_address == motherAddressRequest) {
         motherAddress = req.body.mother_address;
       } else {
         motherAddress = motherAddressRequest;

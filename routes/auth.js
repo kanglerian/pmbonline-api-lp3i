@@ -94,6 +94,60 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.post('/login/v1', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required.' });
+  }
+
+  try {
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const hashPass = /^\$2y\$/.test(user.password) ? '$2b$' + user.password.slice(4) : user.password;
+
+    const match = await bcrypt.compare(req.body.password, hashPass);
+
+    if (!match) {
+      return res.status(401).json({ message: 'Invalid credentials.' });
+    }
+
+    const payload = {
+      identity: user.identity,
+      name: user.name,
+      email: user.email
+    }
+
+    const token = jwt.sign({ data: payload }, JWT_SECRET, { expiresIn: JWT_ACCESS_TOKEN_EXPIRED });
+    const refreshTokenPMBOnlineV1 = jwt.sign({ data: payload }, JWT_SECRET_REFRESH_TOKEN, { expiresIn: JWT_REFRESH_TOKEN_EXPIRED });
+
+    await User.update({
+      token: refreshTokenPMBOnlineV1,
+    }, {
+      where: {
+        id: user.id
+      }
+    });
+
+    res.cookie('refreshTokenPMBOnlineV1', refreshTokenPMBOnlineV1, {
+      httpOnly: true,
+      secure: false,
+    });
+
+    return res.status(200).json({
+      token: token,
+      refresh_token: refreshTokenPMBOnlineV1,
+      message: 'Login successful!'
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 /* Use for PPO */
 router.post('/register/v1', [
   body('name')
