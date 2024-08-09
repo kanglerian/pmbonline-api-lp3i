@@ -51,7 +51,7 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found, check again your email address.' });
+      return res.status(404).json({ message: 'User not found. Please check the email address and try again.' });
     }
 
     const hashPass = /^\$2y\$/.test(user.password) ? '$2b$' + user.password.slice(4) : user.password;
@@ -59,7 +59,7 @@ router.post('/login', async (req, res) => {
     const match = await bcrypt.compare(req.body.password, hashPass);
 
     if (!match) {
-      return res.status(401).json({ message: 'Invalid credentials.' });
+      return res.status(401).json({ message: 'Invalid password. Please check the password and try again.' });
     }
 
     const payload = {
@@ -105,7 +105,7 @@ router.post('/login/v1', async (req, res) => {
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found, check again your email address.' });
+      return res.status(404).json({ message: 'User not found. Please check the email address and try again.' });
     }
 
     const hashPass = /^\$2y\$/.test(user.password) ? '$2b$' + user.password.slice(4) : user.password;
@@ -113,7 +113,7 @@ router.post('/login/v1', async (req, res) => {
     const match = await bcrypt.compare(req.body.password, hashPass);
 
     if (!match) {
-      return res.status(401).json({ message: 'Invalid credentials.' });
+      return res.status(401).json({ message: 'Invalid password. Please check the password and try again.' });
     }
 
     const payload = {
