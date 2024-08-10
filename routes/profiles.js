@@ -62,7 +62,7 @@ const validateApplicantMother = (mother) => {
 };
 
 /* GET profiles listing. */
-router.get('/', verifytoken, async (req, res) => {
+router.get('/v1', verifytoken, async (req, res) => {
   try {
     const identityUser = req.user.data.identity;
     const applicant = await Applicant.findOne({
@@ -146,6 +146,8 @@ router.get('/', verifytoken, async (req, res) => {
       applicant: {
         identity: applicant.identity,
         name: applicant.name,
+        email: applicant.email,
+        phone: applicant.phone,
         avatar: user.avatar,
         gender: applicant.gender,
         religion: applicant.religion,
