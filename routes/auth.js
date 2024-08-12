@@ -435,6 +435,8 @@ router.post('/register/v2', [
         school: schoolVal,
         class: classes,
         email: email,
+        isApplicant: true,
+        programtypeId: 3,
         sourceDaftarId: 12,
         statusId: 1,
         followupId: 1,
