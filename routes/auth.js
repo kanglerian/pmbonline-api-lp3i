@@ -596,7 +596,7 @@ router.post('/token', async (req, res) => {
     });
 
     if (!refresh) {
-      return res.status(422).json({ message: 'Refresh token not found.' });
+      return res.status(400).json({ message: 'Refresh token not found.' });
     }
 
     jwt.verify(req.body.refreshToken, JWT_SECRET_REFRESH_TOKEN, (error, decoded) => {
