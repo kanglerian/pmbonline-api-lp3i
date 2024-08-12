@@ -207,6 +207,8 @@ router.post('/register/v1', [
     if (applicant) {
       const dataApplicant = {
         email: email,
+        isApplicant: true,
+        programtypeId: 3,
         sourceDaftarId: 12,
         statusId: 1,
         followupId: 1,
@@ -277,6 +279,8 @@ router.post('/register/v1', [
         phone: phone,
         pmb: getYearPMB(),
         identityUser: presenter ? information : '6281313608558',
+        isApplicant: true,
+        programtypeId: 3,
         sourceId: 12,
         sourceDaftarId: 12,
         statusId: 1,
@@ -510,6 +514,8 @@ router.post('/register/v2', [
         phone: phone,
         pmb: getYearPMB(),
         identityUser: presenter ? information : '6281313608558',
+        isApplicant: true,
+        programtypeId: 3,
         sourceId: 12,
         sourceDaftarId: 12,
         statusId: 1,
