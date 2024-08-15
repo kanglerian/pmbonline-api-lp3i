@@ -352,7 +352,7 @@ router.post('/register/v1', [
   }
 });
 
-/* use for TGB */
+/* use for TGB, Psikotest */
 router.post('/register/v2', [
   body('name')
     .isLength({ max: 150 }).withMessage('name cannot be more than 150 characters long')
@@ -441,7 +441,7 @@ router.post('/register/v2', [
         email: email,
         isApplicant: true,
         programtypeId: 3,
-        sourceDaftarId: 12,
+        sourceDaftarId: 11,
         statusId: 1,
         followupId: 1,
       }
@@ -516,8 +516,8 @@ router.post('/register/v2', [
         identityUser: presenter ? information : '6281313608558',
         isApplicant: true,
         programtypeId: 3,
-        sourceId: 12,
-        sourceDaftarId: 12,
+        sourceId: 11,
+        sourceDaftarId: 11,
         statusId: 1,
         followupId: 1,
       }
