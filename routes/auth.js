@@ -512,7 +512,7 @@ router.post('/register/v2', [
         school: schoolVal,
         class: classes,
         phone: phone,
-        pmb: getYearPMB(),
+        pmb: getYearPMB() + 2,
         identityUser: presenter ? information : '6281313608558',
         isApplicant: true,
         programtypeId: 3,
