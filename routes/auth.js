@@ -40,6 +40,7 @@ router.get('/', (req, res) => {
   }
 });
 
+/* Use for PPO */
 router.post('/login/v1', async (req, res) => {
   const { email, password } = req.body;
 
@@ -63,9 +64,13 @@ router.post('/login/v1', async (req, res) => {
     }
 
     const payload = {
+      id: user.id,
       identity: user.identity,
       name: user.name,
-      email: user.email
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      status: user.status
     }
 
     const token = jwt.sign({ data: payload }, JWT_SECRET, { expiresIn: JWT_ACCESS_TOKEN_EXPIRED });
@@ -94,6 +99,7 @@ router.post('/login/v1', async (req, res) => {
   }
 });
 
+/* Use for TGB, Psikotest */
 router.post('/login/v2', async (req, res) => {
   const { email, password } = req.body;
 
@@ -675,6 +681,7 @@ router.post('/validation', async (req, res) => {
   }
 });
 
+/* Use for PPO */
 router.delete('/logout/v1', verifyToken, async (req, res) => {
   try {
     await User.update({
@@ -691,6 +698,7 @@ router.delete('/logout/v1', verifyToken, async (req, res) => {
   }
 });
 
+/* Use for TGB, Psikotest */
 router.delete('/logout/v2', verifyToken, async (req, res) => {
   try {
     await User.update({

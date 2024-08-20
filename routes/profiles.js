@@ -61,7 +61,7 @@ const validateApplicantMother = (mother) => {
     mother.address
 };
 
-/* GET profiles listing. */
+/* Use for PPO, TGB, Psikotest */
 router.get('/v1', verifytoken, async (req, res) => {
   try {
     const identityUser = req.user.data.identity;
