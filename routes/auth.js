@@ -158,6 +158,65 @@ router.post('/login/v2', async (req, res) => {
   }
 });
 
+/* Use for SBPMB */
+router.post('/login/v3', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(422).json({ message: 'Email and password are required.' });
+  }
+
+  try {
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found. Please check the email address and try again.' });
+    }
+
+    const hashPass = /^\$2y\$/.test(user.password) ? '$2b$' + user.password.slice(4) : user.password;
+
+    const match = await bcrypt.compare(req.body.password, hashPass);
+
+    if (!match) {
+      return res.status(401).json({ message: 'Invalid password. Please check the password and try again.' });
+    }
+
+    const payload = {
+      id: user.id,
+      identity: user.identity,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      status: user.status
+    }
+
+    const token = jwt.sign({ data: payload }, JWT_SECRET, { expiresIn: JWT_ACCESS_TOKEN_EXPIRED });
+    const refreshTokenPMBOnline = jwt.sign({ data: payload }, JWT_SECRET_REFRESH_TOKEN, { expiresIn: JWT_REFRESH_TOKEN_EXPIRED });
+
+    await User.update({
+      token: refreshTokenPMBOnline,
+    }, {
+      where: {
+        id: user.id
+      }
+    });
+
+    res.cookie('refreshTokenPMBOnlineV3', refreshTokenPMBOnline, {
+      httpOnly: true,
+      secure: false,
+    });
+
+    return res.status(200).json({
+      token: token,
+      refresh_token: refreshTokenPMBOnline,
+      message: 'Login successful!'
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 /* Use for PPO */
 router.post('/register/v1', [
   body('name')
@@ -593,6 +652,232 @@ router.post('/register/v2', [
   }
 });
 
+/* use for SBPMB */
+router.post('/register/v3', [
+  body('name')
+    .isLength({ max: 150 }).withMessage('name cannot be more than 150 characters long')
+    .notEmpty().withMessage('name is required')
+  ,
+  body('email')
+    .isEmail().withMessage('Must be a valid email address')
+    .isLength({ max: 100 }).withMessage('email cannot be more than 100 characters long')
+    .notEmpty().withMessage('email is required')
+    .custom(async (value) => {
+      const user = await User.findOne({
+        where: {
+          email: value
+        }
+      });
+      if (user) {
+        return Promise.reject('Email already in use');
+      }
+    }),
+  body('phone')
+    .notEmpty().withMessage('phone is required')
+    .isLength({ min: 12 }).withMessage('phone cannot be at least 12 characters long')
+    .isLength({ max: 15 }).withMessage('phone cannot be more than 15 characters long')
+    .isMobilePhone('id-ID').withMessage('Phone number must be a valid Indonesian phone number')
+    .custom(async (value) => {
+      const user = await User.findOne({
+        where: {
+          phone: value
+        }
+      });
+      if (user) {
+        return Promise.reject('Phone already in use');
+      }
+    }),
+  body('school')
+    .notEmpty().withMessage('school is required'),
+  body('year')
+    .notEmpty().withMessage('year is required'),
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
+    const { name, email, phone, school, year } = req.body;
+
+    const schoolCheck = await School.findOne({
+      where: { id: school }
+    });
+
+    const schoolNameCheck = await School.findOne({
+      where: { name: school }
+    });
+
+    var schoolVal;
+
+    if (schoolCheck) {
+      schoolVal = schoolCheck.id;
+    } else {
+      if (schoolNameCheck) {
+        schoolVal = schoolNameCheck.id;
+      } else {
+        const dataSchool = {
+          name: school.toUpperCase(),
+          region: 'TIDAK DIKETAHUI'
+        }
+
+        const schoolCreate = await School.create(dataSchool);
+        schoolVal = schoolCreate.id;
+      }
+    }
+
+    const applicant = await Applicant.findOne({
+      where: {
+        phone: phone
+      }
+    });
+
+    if (applicant) {
+      const dataApplicant = {
+        school: schoolVal,
+        year: year,
+        email: email,
+        isApplicant: true,
+        programtypeId: 3,
+        sourceDaftarId: 10,
+        statusId: 1,
+        followupId: 1,
+      }
+
+      const hashPassword = await bcrypt.hash(phone, 10);
+
+      const dataUser = {
+        identity: applicant.identity,
+        name: applicant.name,
+        email: email,
+        phone: applicant.phone,
+        password: hashPassword,
+        role: 'S',
+        status: true
+      }
+
+      const userCreated = await User.create(dataUser);
+      await Applicant.update(dataApplicant, {
+        where: {
+          id: applicant.id
+        }
+      });
+
+      const payload = {
+        id: userCreated.id,
+        identity: userCreated.identity,
+        name: userCreated.name,
+        email: userCreated.email,
+        phone: userCreated.phone,
+        role: userCreated.role,
+        status: userCreated.status
+      }
+
+      const token = jwt.sign({ data: payload }, JWT_SECRET, { expiresIn: JWT_ACCESS_TOKEN_EXPIRED });
+      const refreshTokenPMBOnline = jwt.sign({ data: payload }, JWT_SECRET_REFRESH_TOKEN, { expiresIn: JWT_REFRESH_TOKEN_EXPIRED });
+
+      await User.update({
+        token: refreshTokenPMBOnline,
+      }, {
+        where: {
+          id: userCreated.id
+        }
+      });
+
+      res.cookie('refreshTokenPMBOnlineV3', refreshTokenPMBOnline, {
+        httpOnly: true,
+        secure: false,
+      });
+
+      return res.status(200).json({
+        token: token,
+        refresh_token: refreshTokenPMBOnline,
+        message: 'Registration successful!'
+      });
+    } else {
+      const identityUser = uuidv4();
+      const dataApplicant = {
+        identity: identityUser,
+        name: capitalizeName(name),
+        email: email,
+        school: schoolVal,
+        year: year,
+        phone: phone,
+        pmb: getYearPMB(),
+        identityUser: '6281313608558',
+        isApplicant: true,
+        programtypeId: 3,
+        sourceId: 10,
+        sourceDaftarId: 10,
+        statusId: 1,
+        followupId: 1,
+      }
+
+      const hashPassword = await bcrypt.hash(phone, 10);
+
+      const dataUser = {
+        identity: identityUser,
+        name: capitalizeName(name),
+        email: email,
+        phone: phone,
+        password: hashPassword,
+        role: 'S',
+        status: true
+      }
+
+      const dataFather = {
+        identityUser: identityUser,
+        gender: true
+      }
+
+      const dataMother = {
+        identityUser: identityUser,
+        gender: false
+      }
+
+      const userCreated = await User.create(dataUser);
+      await Applicant.create(dataApplicant);
+      await ApplicantFamily.create(dataFather);
+      await ApplicantFamily.create(dataMother);
+
+      const payload = {
+        id: userCreated.id,
+        identity: userCreated.identity,
+        name: userCreated.name,
+        email: userCreated.email,
+        phone: userCreated.phone,
+        role: userCreated.role,
+        status: userCreated.status
+      }
+
+      const token = jwt.sign({ data: payload }, JWT_SECRET, { expiresIn: JWT_ACCESS_TOKEN_EXPIRED });
+      const refreshTokenPMBOnline = jwt.sign({ data: payload }, JWT_SECRET_REFRESH_TOKEN, { expiresIn: JWT_REFRESH_TOKEN_EXPIRED });
+
+      await User.update({
+        token: refreshTokenPMBOnline,
+      }, {
+        where: {
+          id: userCreated.id
+        }
+      });
+
+      res.cookie('refreshTokenPMBOnlineV3', refreshTokenPMBOnline, {
+        httpOnly: true,
+        secure: false,
+      });
+
+      return res.status(200).json({
+        token: token,
+        refresh_token: refreshTokenPMBOnline,
+        message: 'Registration successful!'
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 router.post('/token', async (req, res) => {
   try {
     const refresh = await User.findOne({
@@ -709,6 +994,23 @@ router.delete('/logout/v2', verifyToken, async (req, res) => {
       }
     });
     res.clearCookie('refreshTokenPMBOnlineV2');
+    return res.status(200).json({ message: 'Successfully logged out.' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+/* Use for SBPMB */
+router.delete('/logout/v3', verifyToken, async (req, res) => {
+  try {
+    await User.update({
+      token: null
+    }, {
+      where: {
+        identity: req.user.data.identity
+      }
+    });
+    res.clearCookie('refreshTokenPMBOnlineV3');
     return res.status(200).json({ message: 'Successfully logged out.' });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });

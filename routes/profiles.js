@@ -6,7 +6,9 @@ const {
   School,
   ApplicantFamily,
   UserUpload,
-  FileUpload
+  FileUpload,
+  Achievement,
+  Organization,
 } = require('../models');
 const verifytoken = require('../middlewares/verifytoken');
 const { Op } = require('sequelize');
@@ -80,23 +82,35 @@ router.get('/v1', verifytoken, async (req, res) => {
       },
     });
 
+    const achievements = await Achievement.findAll({
+      where: {
+        identity_user: identityUser
+      },
+    });
+
+    const organizations = await Organization.findAll({
+      where: {
+        identity_user: identityUser
+      },
+    });
+
     const father = await ApplicantFamily.findOne({
       where: {
-        identity_user: identityUser,
+        identityUser: identityUser,
         gender: true
       },
     });
 
     const mother = await ApplicantFamily.findOne({
       where: {
-        identity_user: identityUser,
+        identityUser: identityUser,
         gender: false
       },
     });
 
     const userUpload = await UserUpload.findAll({
       where: {
-        identity_user: identityUser,
+        identityUser: identityUser,
       },
       include: [
         { model: FileUpload, as: 'fileupload' }
@@ -184,6 +198,8 @@ router.get('/v1', verifytoken, async (req, res) => {
         education: mother.education,
         address: mother.address
       },
+      achievements: achievements,
+      organizations: organizations,
       userupload: userUpload,
       fileupload: fileupload,
       fileuploaded: fileuploaded,
