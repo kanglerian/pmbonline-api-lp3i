@@ -3,7 +3,7 @@ const router = express.Router();
 const { User, UserUpload, FileUpload } = require('../models');
 const verifytoken = require('../middlewares/verifytoken');
 
-/* GET users listing. */
+/* Create history upload */
 router.post('/', verifytoken, async (req, res) => {
   try {
     const data = {

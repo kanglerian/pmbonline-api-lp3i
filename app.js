@@ -13,8 +13,10 @@ const organizationsRouter = require('./routes/organizations');
 const applicantsRouter = require('./routes/applicants');
 const schoolsRouter = require('./routes/schools');
 const profilesRouter = require('./routes/profiles');
-const integrationRouter = require('./routes/integration');
 const useruploadRouter = require('./routes/userupload');
+
+/* Integration SIAKAD TASIK */
+const siakadApplicants = require('./routes/integrations/SIAKAD-TASIK/siakad-applicants');
 
 const app = express();
 
@@ -46,7 +48,9 @@ app.use('/presenters', presentersRouter);
 app.use('/applicants', applicantsRouter);
 app.use('/schools', schoolsRouter);
 app.use('/profiles', profilesRouter);
-app.use('/integration', integrationRouter);
 app.use('/userupload', useruploadRouter);
+
+/* Integration SIAKAD TASIK */
+app.use('/integrations/siakadtasik/applicants', siakadApplicants);
 
 module.exports = app;

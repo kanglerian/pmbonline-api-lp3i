@@ -5,7 +5,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 
-const verifyToken = require('../middlewares/verifytoken');
+const verifytoken = require('../middlewares/verifytoken');
 
 const { JWT_SECRET, JWT_SECRET_REFRESH_TOKEN, JWT_ACCESS_TOKEN_EXPIRED, JWT_REFRESH_TOKEN_EXPIRED } = process.env;
 
@@ -967,7 +967,7 @@ router.post('/validation', async (req, res) => {
 });
 
 /* Use for PPO */
-router.delete('/logout/v1', verifyToken, async (req, res) => {
+router.delete('/logout/v1', verifytoken, async (req, res) => {
   try {
     await User.update({
       token: null
@@ -984,7 +984,7 @@ router.delete('/logout/v1', verifyToken, async (req, res) => {
 });
 
 /* Use for TGB, Psikotest */
-router.delete('/logout/v2', verifyToken, async (req, res) => {
+router.delete('/logout/v2', verifytoken, async (req, res) => {
   try {
     await User.update({
       token: null
@@ -1001,7 +1001,7 @@ router.delete('/logout/v2', verifyToken, async (req, res) => {
 });
 
 /* Use for SBPMB */
-router.delete('/logout/v3', verifyToken, async (req, res) => {
+router.delete('/logout/v3', verifytoken, async (req, res) => {
   try {
     await User.update({
       token: null

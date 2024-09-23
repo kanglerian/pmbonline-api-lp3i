@@ -3,7 +3,7 @@ const router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.send('PMB Online LP3I 🇮🇩');
+  return res.send('PMB Online LP3I 🇮🇩');
 });
 
 module.exports = router;
