@@ -15,12 +15,17 @@ router.get('/', verifyapikey, async (req, res) => {
         role: 'P',
         status: true,
       },
-      attributes: ['identity','name','email','phone'],
+      attributes: ['identity', 'name', 'email', 'phone'],
       limit: limit,
       offset: offset,
     });
 
-    const totalItems = await User.count();
+    const totalItems = await User.count({
+      where: {
+        role: 'P',
+        status: true,
+      },
+    });
     const totalPages = Math.ceil(totalItems / limit);
 
     return res.status(200).json({

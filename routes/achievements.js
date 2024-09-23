@@ -18,7 +18,11 @@ router.get('/:identityUser', verifytoken, async (req, res) => {
       offset: offset,
     });
 
-    const totalItems = await Achievement.count();
+    const totalItems = await Achievement.count({
+      where: {
+        identityUser: req.params.identityUser
+      },
+    });
     const totalPages = Math.ceil(totalItems / limit);
 
     return res.status(200).json({

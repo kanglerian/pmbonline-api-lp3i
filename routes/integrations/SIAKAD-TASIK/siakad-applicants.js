@@ -8,7 +8,6 @@ const { Applicant, School } = require('../../../models');
 router.get('/', verifyapikey,  async (req, res) => {
   try {
     const { program } = req.query;
-
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
@@ -33,7 +32,9 @@ router.get('/', verifyapikey,  async (req, res) => {
       offset: offset,
     });
 
-    const totalItems = await Applicant.count();
+    const totalItems = await Applicant.count({
+      where: filters,
+    });
     const totalPages = Math.ceil(totalItems / limit);
 
     return res.status(200).json({
