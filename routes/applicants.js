@@ -70,6 +70,12 @@ router.get('/:identity', verifyapikey, async (req, res) => {
       }
     });
 
+    if(!response){
+      return res.status(404).json({
+        message: 'Applicant not found.'
+      });
+    }
+
     const useruploads = await UserUpload.findAll({
       where: {
         identity_user: req.params.identity
