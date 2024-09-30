@@ -1,9 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const verifytoken = require('../middlewares/verifytoken');
+const verifyapikey = require('../middlewares/verifyapikey');
 
-const { User, Applicant, ApplicantFamily, School } = require('../models');
+const {
+  User,
+  UserUpload,
+  Applicant,
+  ApplicantFamily,
+  ApplicantStatus,
+  School,
+  SourceSetting,
+  FollowUp,
+  FileUpload,
+  ProgramType,
+  Achievement,
+  Organization,
+} = require('../models');
 const { body, validationResult } = require('express-validator');
+const programtype = require('../models/programtype');
 
 /* GET applicants listing. */
 router.get('/', verifytoken, async (req, res) => {
@@ -26,6 +41,103 @@ router.get('/', verifytoken, async (req, res) => {
       currentPage: page,
       data: response.length > 0 ? response : [],
       limit,
+    });
+  } catch (error) {
+    return res.json({
+      message: error.message
+    });
+  }
+});
+
+/* GET applicant by identity. */
+router.get('/:identity', verifyapikey, async (req, res) => {
+  try {
+    const response = await Applicant.findOne({
+      where: {
+        identity: req.params.identity
+      },
+      include: [
+        { model: School, as: 'schoolapplicant', attributes: ['name','region'] },
+        { model: User, as: 'presenter', attributes: ['identity','name','email','phone'] },
+        { model: ApplicantStatus, as: 'applicantStatus', attributes: ['name'] },
+        { model: SourceSetting, as: 'sourcesetting', attributes: ['name'] },
+        { model: SourceSetting, as: 'sourcedaftarsetting', attributes: ['name'] },
+        { model: FollowUp, as: 'followup', attributes: ['name'] },
+        { model: ProgramType, as: 'programtype', attributes: ['name'] },
+      ],
+      attributes: {
+        exclude: ['id','isread','come','known','planning','otherCampus','createdAt','updatedAt']
+      }
+    });
+
+    const useruploads = await UserUpload.findAll({
+      where: {
+        identity_user: req.params.identity
+      },
+      include: [
+        { model: FileUpload, as: 'fileupload', attributes: {
+          exclude: ['id','createdAt','updatedAt']
+        } },
+      ],
+      attributes: {
+        exclude: ['createdAt','updatedAt']
+      }
+    });
+
+    const father = await ApplicantFamily.findOne({
+      where: {
+        identity_user: req.params.identity,
+        gender: 1,
+      },
+      attributes: {
+        exclude: ['id','createdAt','updatedAt']
+      }
+    });
+
+    const mother = await ApplicantFamily.findOne({
+      where: {
+        identity_user: req.params.identity,
+        gender: 0,
+      },
+      attributes: {
+        exclude: ['id','createdAt','updatedAt']
+      }
+    });
+
+    const achievements = await Achievement.findOne({
+      where: {
+        identity_user: req.params.identity,
+      },
+      attributes: {
+        exclude: ['id','createdAt','updatedAt']
+      }
+    });
+
+    const organizations = await Organization.findOne({
+      where: {
+        identity_user: req.params.identity,
+      },
+      attributes: {
+        exclude: ['id','createdAt','updatedAt']
+      }
+    });
+
+    const account = await User.findOne({
+      where: {
+        identity: req.params.identity,
+        role: 'S'
+      },
+      attributes: ['avatar','name','email','phone','status']
+    });
+
+    return res.status(200).json({
+      data: response,
+      useruploads: useruploads,
+      father: father,
+      mother: mother,
+      achievements: achievements,
+      organizations: organizations,
+      account: account,
     });
   } catch (error) {
     return res.json({

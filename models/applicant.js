@@ -12,7 +12,32 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Applicant.belongsTo(models.School, {
         foreignKey: 'school',
-        as: 'schools'
+        as: 'schoolapplicant'
+      });
+      Applicant.belongsTo(models.User, {
+        foreignKey: 'identityUser',
+        targetKey: 'identity',
+        as: 'presenter'
+      });
+      Applicant.belongsTo(models.ApplicantStatus, {
+        foreignKey: 'statusId',
+        as: 'applicantStatus'
+      });
+      Applicant.belongsTo(models.SourceSetting, {
+        foreignKey: 'statusId',
+        as: 'sourcesetting'
+      });
+      Applicant.belongsTo(models.SourceSetting, {
+        foreignKey: 'sourceDaftarId',
+        as: 'sourcedaftarsetting'
+      });
+      Applicant.belongsTo(models.FollowUp, {
+        foreignKey: 'followupId',
+        as: 'followup'
+      });
+      Applicant.belongsTo(models.ProgramType, {
+        foreignKey: 'programtypeId',
+        as: 'programtype'
       });
     }
   }
