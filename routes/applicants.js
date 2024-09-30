@@ -17,8 +17,8 @@ const {
   Achievement,
   Organization,
 } = require('../models');
+
 const { body, validationResult } = require('express-validator');
-const programtype = require('../models/programtype');
 
 /* GET applicants listing. */
 router.get('/', verifytoken, async (req, res) => {
