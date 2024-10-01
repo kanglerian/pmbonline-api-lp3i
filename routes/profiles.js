@@ -72,7 +72,7 @@ router.get('/v1', verifytoken, async (req, res) => {
         identity: identityUser
       },
       include: [
-        { model: School, as: 'schools' }
+        { model: School, as: 'schoolapplicant' }
       ]
     });
 
