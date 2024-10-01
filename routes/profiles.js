@@ -159,7 +159,7 @@ router.get('/v1', verifytoken, async (req, res) => {
     return res.status(200).json({
       applicant: {
         identity: applicant.identity,
-        name: applicant.name ?? 'tidak ada 1',
+        name: applicant.name,
         email: applicant.email,
         phone: applicant.phone,
         avatar: user.avatar,
@@ -178,10 +178,10 @@ router.get('/v1', verifytoken, async (req, res) => {
         social_media: applicant.socialMedia,
         role: user.role,
         status: user.status,
-        school: applicant.school ? applicant.schools.name : null,
+        school: applicant.schoolapplicant ? applicant.schoolapplicant.name : null,
       },
       father: {
-        name: father.name ?? 'tidak ada 2',
+        name: father.name,
         phone: father.phone,
         place_of_birth: father.placeOfBirth,
         date_of_birth: father.dateOfBirth,
@@ -190,7 +190,7 @@ router.get('/v1', verifytoken, async (req, res) => {
         address: father.address
       },
       mother: {
-        name: mother.name ?? 'tidak ada 3',
+        name: mother.name,
         phone: mother.phone,
         place_of_birth: mother.placeOfBirth,
         date_of_birth: mother.dateOfBirth,
