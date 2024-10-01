@@ -6,12 +6,10 @@ const verifyapikey = require('../middlewares/verifyapikey');
 /* GET schools listing. */
 router.get('/', verifyapikey, async (req, res) => {
   try {
-    const response = await School.findAll({
+    const data = await School.findAll({
       attributes: ['name','region','lat','lng','status'],
     });
-    return res.status(200).json({
-      data: response
-    });
+    return res.status(200).json(data);
   } catch (error) {
     return res.json({
       message: error.message
